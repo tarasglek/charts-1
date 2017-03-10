@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empty-set-pod
+spec:
+  containers:
+  - name: postgres-container
+    image: postgres
+    volumeMounts:
+    - mountPath: /var/lib/postgresql
+      name: cache-volume
