@@ -27,3 +27,19 @@ empty-set-pod   0/1       Pending   0          1m
 # Log
 
 March 9: Use an emptyVol mount to serve a persistent volume via NFS
+
+# NFS
+
+```console
+$ kubectl create -f nfs/nfs-server-rc.yaml
+$ kubectl create -f nfs/nfs-server-service.yaml
+# get the cluster IP of the server using the following command
+$ NFS_IP=`kubectl describe services nfs-server|grep IP:|sed 's/[^0-9]*//'` && echo $NFS_IP
+# use the NFS server IP to update nfs-pv.yaml and execute the following
+$ sed 's/\( *server: \)\(.*\)/\1'$NFS_IP'/' nfs/nfs-pv.yaml.template > nfs/nfs-pv.yaml 
+$ kubectl create -f nfs/nfs-pv.yaml
+$ kubectl create -f nfs/nfs-pvc.yaml
+# run postgres
+$ kubectl create -f postgres.yaml
+```
+
