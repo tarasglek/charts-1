@@ -38,8 +38,21 @@ $ NFS_IP=`kubectl describe services nfs-server|grep IP:|sed 's/[^0-9]*//'` && ec
 # use the NFS server IP to update nfs-pv.yaml and execute the following
 $ sed 's/\( *server: \)\(.*\)/\1'$NFS_IP'/' nfs/nfs-pv.yaml.template > nfs/nfs-pv.yaml 
 $ kubectl create -f nfs/nfs-pv.yaml
+# b
 $ kubectl create -f nfs/nfs-pvc.yaml
 # run postgres
 $ kubectl create -f postgres.yaml
+$ kubectl create -f nfs/nfs-busybox-rc.yaml
+
 ```
 
+# StorageClass
+
+minikube has an annoying default storageclass that satisfies all claims via hostpath. The following gets rid of that
+```
+kubectl get storageclass
+NAME                 TYPE
+standard (default)   k8s.io/minikube-hostpath
+[taras@localhost cloud-svc]$ kubectl delete storageclass --all
+storageclass "standard" deleted
+```
