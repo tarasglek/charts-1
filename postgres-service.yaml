@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-server
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      nodePort: 30432
+  type: "NodePort"
+  # type: "ClusterIP" doesn't work
+  # sessionAffinity: "ClientIP"
+  selector:
+    role: postgres-server

@@ -11,6 +11,7 @@ spec:
       labels:
         role: postgres-server
     spec:
+      restartPolicy: "Always"
       containers:
       - name: postgres-server
         image: postgres
@@ -23,9 +24,10 @@ spec:
             containerPort: 5432
         volumeMounts:
           # name must match the volume name below
-          - name: nfs
+          - name: hostpath-claim
             mountPath: "/var/lib/postgresql/data"
       volumes:
-      - name: nfs
+      - name: hostpath-claim
         persistentVolumeClaim:
-          claimName: nfs
+          claimName: hostpath-claim
+    
