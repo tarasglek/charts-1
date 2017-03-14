@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: mnt-volume
+spec:
+    capacity:
+      storage: 1Gi
+    hostPath:
+      path: /mnt
+    accessModes:
+      - ReadWriteOnce

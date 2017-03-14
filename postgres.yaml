@@ -24,10 +24,10 @@ spec:
             containerPort: 5432
         volumeMounts:
           # name must match the volume name below
-          - name: hostpath-claim
+          - name: db-volume-claim
             mountPath: "/var/lib/postgresql/data"
       volumes:
-      - name: hostpath-claim
+      - name: db-volume-claim
         persistentVolumeClaim:
-          claimName: hostpath-claim
+          claimName: db-volume
     
