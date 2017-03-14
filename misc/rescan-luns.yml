@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rescan-luns
+spec:
+  template:
+    metadata:
+      name: rescan-luns
+    spec:
+      containers:
+      - image: busybox
+        command:
+          - sh
+          - -c
+          - 'for file in /mnt/class/scsi_host/*/scan; do echo "- - -" >  $file; done'
+        imagePullPolicy: IfNotPresent
+        name: busybox
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /mnt
+          name: sys-host
+      volumes:
+      - name: sys-host
+        hostPath:
+          # directory location on host
+          path: /sys
+      restartPolicy: Never
