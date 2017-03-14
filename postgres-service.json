@@ -1,0 +1,20 @@
+{
+  "kind": "Service", 
+  "spec": {
+    "type": "NodePort", 
+    "ports": [
+      {
+        "port": 5432, 
+        "nodePort": 30432, 
+        "name": "postgres"
+      }
+    ], 
+    "selector": {
+      "role": "postgres-server"
+    }
+  }, 
+  "apiVersion": "v1", 
+  "metadata": {
+    "name": "postgres-server"
+  }
+}
