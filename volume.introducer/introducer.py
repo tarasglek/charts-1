@@ -73,7 +73,7 @@ def add_volume(volume_path):
         run('mkfs.xfs ' + volume_path)
     except:
         pass
-    run('mount %s %s' % (volume_path, mnt_dir))
+    run('mount -o nouuid %s %s' % (volume_path, mnt_dir))
     port = int(volume_name.split('-')[1])
     try:
         provision_database(mnt_dir, port)
