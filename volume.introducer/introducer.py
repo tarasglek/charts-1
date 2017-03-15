@@ -3,6 +3,15 @@ import sys
 import os.path
 import json
 import tempfile
+import re
+import glob
+import time
+
+class KubernetesException(Exception):
+    def __init__(self, message):
+        # Call the base class constructor with the parameters it needs
+        super(KubernetesException, self).__init__(message)
+
 
 def run(cmd):
     print cmd
@@ -18,9 +27,13 @@ def kubernetes_create(obj):
     f = tempfile.NamedTemporaryFile(delete=False)
     f.write(obj_str)
     f.close()
-    print obj_str
-    run("kubectl create -f " + f.name)
-    os.remove(f.name)
+    # print obj_str
+    try:
+        run("kubectl create -f " + f.name)
+    except subprocess.CalledProcessError as e:
+        raise KubernetesException(e.message)
+    finally:
+        os.remove(f.name)
 
 def provision_database(mnt_dir, port):
     service = from_file("postgres-service.json")
@@ -39,12 +52,14 @@ def provision_database(mnt_dir, port):
     rc['metadata']['name'] += port_suffix
     kubernetes_create(rc)
 
-
-
 def add_volume(volume_path):
     stdout = run('sg_inq -p 0x83 ' + volume_path)
     volume_name = stdout.split(' ')[-1].strip()
-    print volume_name
+    db_volume_match = re.search(r'db-\d+$', volume_name)
+    if not db_volume_match:
+        print "(%s, %s) is not a db volume, skipping" % (volume_path, volume_name)
+        return
+
     mnt_dir = '/mnt/' + volume_name
     run('mkdir -p ' + mnt_dir)
     try:
@@ -57,10 +72,27 @@ def add_volume(volume_path):
         pass
     run('mount %s %s' % (volume_path, mnt_dir))
     port = int(volume_name.split('-')[1])
-    provision_database(mnt_dir, port)
+    try:
+        provision_database(mnt_dir, port)
+    except KubernetesException as e:
+        print "Failed to start K8S RS for (%s, %s): %s" % (volume_path, volume_name, str(e))
+
+def scan_volumes():
+    tried_before = set()
+    while True:
+        for volume in glob.glob("/dev/sd[a-z]*"):
+            # skip partions
+            c = volume[-1]
+            if not volume in tried_before and c >= 'a' and c <= 'z':
+                tried_before.add(volume)
+                yield volume
+        for sys_scan in glob.glob("/sys/class/scsi_host/*/scan"):
+            with open(sys_scan, 'w') as outfile:
+                outfile.write("- - -\n")
+        time.sleep(1)
 
 def main():
-    [volume] = sys.argv[1:]
-    add_volume(volume)
+    for volume in scan_volumes():
+        add_volume(volume)
 
 main()
