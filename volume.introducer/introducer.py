@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os.path
 import json
+import tempfile
 
 def run(cmd):
     print cmd
@@ -12,6 +13,15 @@ def from_file(json_file):
     root_dir = os.path.join(os.path.dirname(sys.argv[0]), "..")
     return json.loads(open(os.path.join(root_dir, json_file)).read())
 
+def kubernetes_create(obj):
+    obj_str = json.dumps(obj, indent=2)
+    f = tempfile.NamedTemporaryFile(delete=False)
+    f.write(obj_str)
+    f.close()
+    print obj_str
+    run("kubectl create -f " + f.name)
+    os.remove(f.name)
+
 def provision_database(mnt_dir, port):
     service = from_file("postgres-service.json")
     port_suffix = "-" + str(port)
@@ -19,10 +29,16 @@ def provision_database(mnt_dir, port):
     service['spec']['ports'][0]['name'] += port_suffix
     service['spec']['selector']['role'] += port_suffix
     service['metadata']['name'] += port_suffix
-    print(json.dumps(service,indent=2))
+    kubernetes_create(service)
 
     rc = from_file("postgres-withvolume.json")
-    
+    rc['spec']['template']['spec']['containers'][0]['name'] += port_suffix
+    rc['spec']['template']['spec']['volumes'][0]['hostPath']['path'] = mnt_dir
+    rc['spec']['template']['metadata']['labels']['role'] += port_suffix
+    rc['spec']['selector']['role'] += port_suffix
+    rc['metadata']['name'] += port_suffix
+    kubernetes_create(rc)
+
 
 
 def add_volume(volume_path):
