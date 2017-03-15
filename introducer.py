@@ -22,7 +22,7 @@ def run(cmd):
     return subprocess.check_output(cmd, shell=True)
 
 def from_file(json_file):
-    root_dir = os.path.join(os.path.dirname(my_path), "..")
+    root_dir = os.path.join(os.path.dirname(my_path), "resources")
     return json.loads(open(os.path.join(root_dir, json_file)).read())
 
 def kubernetes_create(obj):
