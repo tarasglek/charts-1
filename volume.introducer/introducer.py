@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import subprocess
 import sys
 import os.path
@@ -6,6 +7,8 @@ import tempfile
 import re
 import glob
 import time
+
+my_path = os.path.abspath(sys.argv[0])
 
 class KubernetesException(Exception):
     def __init__(self, message):
@@ -19,7 +22,7 @@ def run(cmd):
     return subprocess.check_output(cmd, shell=True)
 
 def from_file(json_file):
-    root_dir = os.path.join(os.path.dirname(sys.argv[0]), "..")
+    root_dir = os.path.join(os.path.dirname(my_path), "..")
     return json.loads(open(os.path.join(root_dir, json_file)).read())
 
 def kubernetes_create(obj):
@@ -91,7 +94,25 @@ def scan_volumes():
                 outfile.write("- - -\n")
         time.sleep(1)
 
+# tell systemd to start me on boot
+def install_me():
+    unit_def = """
+[Unit]
+Description=DB creation service
+
+[Service]
+ExecStart=%s
+
+[Install]
+WantedBy=multi-user.target""" % my_path
+    unit_path = '/etc/systemd/system/introducer.service'
+    with open(unit_path, 'w') as outfile:
+        outfile.write(unit_def)
+    run("systemctl enable %s" % os.path.basename(unit_path))
+
 def main():
+    if sys.argv[-1] == "--install":
+        install_me()
     for volume in scan_volumes():
         add_volume(volume)
 
