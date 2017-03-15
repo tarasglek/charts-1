@@ -1,22 +1,22 @@
 # Getting started
 
-```
-> minikube start
-```
-A pod is just a set of containers
-Deployment is a pod managed by replicasets
+Setup k8s as pure app per https://wiki.purestorage.com/display/psw/Kubernetes+App
 
-
+Checkout this repository into pure app vm.
 ```
-> kubectl create -f hostpath-pv.yaml
-> kubectl create -f hostpath-pvc.yaml
-> kubectl create -f postgres-service.yaml
-> kubectl create -f postgres.yaml
-# Get node addresses
+> ./introducer.py  --install
 > POSTGRES_IP=`kubectl get nodes -o jsonpath='{.items[*].status.addresses[].address}'` && echo $POSTGRES_IP
-# Connect
+```
+
+Now create volumes using db-### where ### is a number in k8s nodePort range (default 30000-32767). Attach these to your pure app.
+
+This will result in introducer.py spinning up database instances.
+
+```
+# Connect from another computer on lan
 > psql -h $POSTGRES_IP -p 30432 -U postgres
 ```
+
 # Troubleshooting
 ```
 > kubectl describe pods
