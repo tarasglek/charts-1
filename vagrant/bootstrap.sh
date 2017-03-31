@@ -15,6 +15,6 @@ add-apt-repository \
 
 apt-get update
 # install various goodies for kubernetes
-apt-get -y install docker-ce xfsprogs open-iscsi multipath-tools util-linux
+apt-get -y install docker-ce xfsprogs open-iscsi multipath-tools util-linux socat
 # install nsenter for helm(tiller)
 docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
