@@ -1,7 +1,5 @@
 #!/bin/bash
 #run cluster/kube-up.sh, need to be root?
-PATH=$PWD/kubernetes-${KUBE_VERSION}/cluster/ubuntu/binaries:$PATH
-echo $PATH
 if [ -d "kubernetes-${KUBE_VERSION}/cluster" ]; then
  cd kubernetes-${KUBE_VERSION}/cluster
 else #environment not K8 environment not set up
