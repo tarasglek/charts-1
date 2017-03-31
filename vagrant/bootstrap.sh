@@ -4,8 +4,8 @@ echo ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrh16eSSa8gieQlOcmkQZMTWyjdXXezph/Mws
 apt-get -y install \
   apt-transport-https \
   ca-certificates \
-  curl
-
+  curl linux-image-extra-$(uname -r)
+  
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 add-apt-repository \

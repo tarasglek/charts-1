@@ -20,7 +20,8 @@ def list_pg():
         yield (name, int(m.group(1)))
 
 def provision_one(port):
-    run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass=pure-provisioner,postgresPassword=taras,externalIP=10.19.66.145,port={port}".format(port=port))
+    ip = "192.168.50.4"
+    run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass=pure-provisioner,postgresPassword=taras,externalIP={ip},port={port}".format(port=port, ip=ip))
     
 def provision_another():
     new_port = 5432

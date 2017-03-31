@@ -1,42 +1,46 @@
-# To use, export VAGRANT_DEFAULT_PROVIDER=libvirt
+# -*- mode: ruby -*-
+# vim: ft=ruby
 
-Vagrant.configure("2") do |config|
 
-  # Tell Vagrant where would you like to start your VMs (you can also have a
-  # specific per-VM configuration. Do not put this section in case you want to
-  # start your VMs on the same host)
-  # config.vm.provider :libvirt do |libvirt|
-  #   libvirt.host = 'r66a-35.dev.purestorage.com'
-  #   libvirt.username = 'root'
-  #   libvirt.connect_via_ssh = true
-  # end
+# ---- Configuration variables ----
 
-  # Here's our VM confguration
-  config.vm.define :k8s_master_vm do |machine|
-    # config.ssh.private_key_path = "~/.ssh/authorized_keys"
-    # It should be an Ubuntu 14.04 box
-    machine.vm.box = "ubuntu/trusty64"
+GUI               = false # Enable/Disable GUI
+RAM               = 2048   # Default memory size in MB
 
-    # With a public IP (it's optional)
-    # machine.vm.network :public_network, ip: '10.14.66.25', :dev => "br0", :mode => 'bridge', :type => "bridge"
-    # With so much RAM and CPUs
-    config.vm.network "private_network", ip: "192.168.50.4"
-  #  config.vm.provider :libvirt do |domain|
-  #    domain.memory = 4048
-  #    domain.cpus = 4
-  #  end
+# Network configuration
+DOMAIN            = ".dev.purestorage.com"
+NETWORK           = "192.168.50."
+NETMASK           = "255.255.255.0"
 
- config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  
-     # Customize the amount of memory on the VM:
-     vb.memory = "4024"
-  end
-    # Finally, let's provision it by running a script. You can also run
-    # puppet, chef, ansible, and others. Check the Vagrant website for
-    # details.
-    machine.vm.provision :shell, path: "bootstrap.sh", args: "42", keep_color: true
+# Default Virtualbox .box
+# See: https://wiki.debian.org/Teams/Cloud/VagrantBaseBoxes
+BOX               = 'ubuntu/trusty64'
 
-  end
+HOSTS = {
+   "master" => [NETWORK+"4", RAM, GUI, BOX],
+   "node1" => [NETWORK+"5", RAM, GUI, BOX],
+   "node2" => [NETWORK+"6", RAM, GUI, BOX],
+}
+
+# ---- Vagrant configuration ----
+
+Vagrant.configure(2) do |config|
+  HOSTS.each do | (name, cfg) |
+    ipaddr, ram, gui, box = cfg
+
+    config.vm.define name do |machine|
+      machine.vm.box   = box
+      machine.vm.guest = :debian
+
+      machine.vm.provider "virtualbox" do |vbox|
+        vbox.gui    = gui
+        vbox.memory = ram
+        vbox.name = name
+      end
+
+      machine.vm.hostname = name + DOMAIN
+      machine.vm.network 'private_network', ip: ipaddr, netmask: NETMASK
+      machine.vm.provision :shell, path: "bootstrap.sh", args: "42", keep_color: true
+    end
+  end # HOSTS-each
 end

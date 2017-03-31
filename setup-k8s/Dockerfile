@@ -15,10 +15,10 @@ WORKDIR /k8s
 ENV KUBE_VERSION 1.5.0
 RUN git clone --depth 1 https://github.com/tarasglek/kubernetes kubernetes-$KUBE_VERSION -b taras
 ENV KUBERNETES_PROVIDER ubuntu
-ENV nodes "root@192.168.50.4"
-ENV role_string "ai"
-ENV NUM_MINIONS 1
-ENV NUM_NODES 1
+ENV nodes "root@192.168.50.4 root@192.168.50.5 root@192.168.50.6"
+ENV role_string "ai i i"
+ENV NUM_MINIONS 3
+ENV NUM_NODES 3
 ENV SERVICE_CLUSTER_IP_RANGE 192.168.3.0/24
 ENV FLANNEL_NET 172.16.0.0/16
 ENV DEBUG true
@@ -26,4 +26,6 @@ RUN echo 'export PATH=/k8s/kubernetes-'${KUBE_VERSION}'/cluster/ubuntu/binaries:
 RUN mkdir ~/.ssh && chmod 700 ~/.ssh && mkdir ~/.kube
 COPY scripts /k8s/scripts
 # ./build-tools/run.sh  make KUBE_FASTBUILD=true ARCH=amd64
-CMD cd /k8s && /k8s/scripts/up.sh && /k8s/scripts/replace-with-my-kubelet.sh
+CMD cd /k8s && \
+    #/k8s/scripts/up.sh && \
+    /k8s/scripts/replace-with-my-kubelet.sh
