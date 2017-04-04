@@ -20,6 +20,7 @@ HOSTS = {
    "master" => [NETWORK+"4", RAM, GUI, BOX],
    "node1" => [NETWORK+"5", RAM, GUI, BOX],
    "node2" => [NETWORK+"6", RAM, GUI, BOX],
+   "node3" => [NETWORK+"7", RAM, GUI, "ubuntu/xenial64"],
 }
 
 # ---- Vagrant configuration ----
