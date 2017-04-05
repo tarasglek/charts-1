@@ -17,18 +17,17 @@ NETMASK           = "255.255.255.0"
 BOX               = 'ubuntu/trusty64'
 
 HOSTS = {
-   "master" => [NETWORK+"4", RAM, GUI, BOX],
-   "node1" => [NETWORK+"5", RAM, GUI, BOX],
-   "node2" => [NETWORK+"6", RAM, GUI, BOX],
-   "node3" => [NETWORK+"7", RAM, GUI, "ubuntu/xenial64"],
+   "k8s-master" => ["4", RAM, GUI, "ubuntu/xenial64"],
+   "k8s-node5" => ["5", RAM, GUI, "ubuntu/xenial64"],
+   "k8s-node6" => ["6", RAM, GUI, "ubuntu/xenial64"],
 }
 
 # ---- Vagrant configuration ----
 
 Vagrant.configure(2) do |config|
   HOSTS.each do | (name, cfg) |
-    ipaddr, ram, gui, box = cfg
-
+    ipaddr_suffix, ram, gui, box = cfg
+    ipaddr = NETWORK + ipaddr_suffix
     config.vm.define name do |machine|
       machine.vm.box   = box
       machine.vm.guest = :debian
@@ -44,4 +43,7 @@ Vagrant.configure(2) do |config|
       machine.vm.provision :shell, path: "bootstrap.sh", args: "42", keep_color: true
     end
   end # HOSTS-each
+  # if Vagrant.has_plugin?("vagrant-cachier")
+  #   config.cache.scope = :box
+  # end
 end
