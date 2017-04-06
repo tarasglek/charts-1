@@ -24,8 +24,8 @@ apt-get update
 apt-get install -y docker.io
 apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
-    
+
 #fix env
 # need kubeadm with https://github.com/kubernetes/kubernetes/pull/43835/files
-cp /vagrant/kubeadm-1.6.fixed /usr/bin/kubeadm
+# cp /vagrant/kubeadm-1.6.fixed /usr/bin/kubeadm
 /vagrant/swap_etc_hosts_run_kubeadm.py

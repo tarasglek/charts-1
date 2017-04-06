@@ -34,6 +34,8 @@ def init_save_kube_join_string(filename, ip):
     print run("kubeadm init --apiserver-advertise-address 192.168.50.4")
     print run("mkdir -p ~/.kube && cp /etc/kubernetes/admin.conf ~/.kube/config && cp -R /root/.kube/ ~ubuntu/.kube/ && chown ubuntu:ubuntu -R ~ubuntu/.kube/")
     print run("cp /root/.kube/config /vagrant/config")
+    # flannel rbac
+    print run("kubectl create -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml")
     print run("kubectl create -f https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml?raw=true")
     #print run("kubectl apply -f https://git.io/weave-kube-1.6")
     #enable scheduling pods on master node
