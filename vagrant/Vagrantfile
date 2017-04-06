@@ -19,7 +19,7 @@ BOX               = 'ubuntu/trusty64'
 HOSTS = {
    "k8s-master" => ["4", RAM, GUI, "ubuntu/xenial64"],
    "k8s-node5" => ["5", RAM, GUI, "ubuntu/xenial64"],
-   "k8s-node6" => ["6", RAM, GUI, "ubuntu/xenial64"],
+  #  "k8s-node6" => ["6", RAM, GUI, "ubuntu/xenial64"],
 }
 
 # ---- Vagrant configuration ----

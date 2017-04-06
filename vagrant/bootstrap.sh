@@ -7,7 +7,7 @@ apt-get -y install \
   ca-certificates \
   curl linux-image-extra-$(uname -r) \
 
-apt-get install -y xfsprogs open-iscsi multipath-tools util-linux socat
+apt-get install -y xfsprogs open-iscsi multipath-tools util-linux socat python
 
 # instructions cut/pasted from https://kubernetes.io/docs/getting-started-guides/kubeadm/
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
@@ -24,16 +24,8 @@ apt-get update
 apt-get install -y docker.io
 apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
-exit
-# modify /etc/hosts to replace first 127.0.0.1 with 192.168.50.4 
-kubeadm init --config /vagrant/kubeadm_config.yaml
-cd /vagrant
-mkdir -p ~/.kube && cp /etc/kubernetes/admin.conf ~/.kube/config && cp -R /root/.kube/ ~ubuntu/.kube/ && chown ubuntu:ubuntu -R ~ubuntu/.kube/
-cp /root/.kube/config /vagrant/config
-kubectl apply -f https://git.io/weave-kube-1.6
-#enable scheduling pods on master node
-kubectl taint nodes --all node-role.kubernetes.io/master-
-# to make tiller work: curl https://gist.githubusercontent.com/groundnuty/fa778fc06cd79f4de687490afb6de421/raw/b43e3a4c1f2670f038db9415cc7f90b2efd3eab5/serviceaccount_fix.yaml  | kubectl --kubeconfig /etc/kubernetes/admin.conf create -f -
-# kubectl get --all-namespaces pods
-#ip -o address show dev enp0s8
-#
+    
+#fix env
+# need kubeadm with https://github.com/kubernetes/kubernetes/pull/43835/files
+cp /vagrant/kubeadm-1.6.fixed /usr/bin/kubeadm
+/vagrant/swap_etc_hosts_run_kubeadm.py
