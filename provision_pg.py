@@ -6,10 +6,19 @@ import re
 def run(cmd):
     print cmd
     sys.stdout.flush()
-    return subprocess.check_output(cmd, shell=True)
+    try:
+        return subprocess.check_output(cmd, shell=True)
+    except subprocess.CalledProcessError as err:
+        sys.stderr.write(err.output)
+        raise err
 
 def list_pg():
-    helm_output = run("helm list").split("\n")
+    try:
+        helm_output = run("helm list").split("\n")
+    except subprocess.CalledProcessError:
+        run("helm init #maybe try again once tiller has been activated")
+        sys.exit(0)
+
     for line in helm_output[1:]:
         cols = line.split("\t")
         name = cols[0]
@@ -19,16 +28,16 @@ def list_pg():
             continue
         yield (name, int(m.group(1)))
 
-def provision_one(port):
+def provision_one(port, provisioner):
     ip = "192.168.50.4"
-    run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass=pure-provisioner,postgresPassword=taras,externalIP={ip},port={port}".format(port=port, ip=ip))
-    
-def provision_another():
-    new_port = 5432
+    run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,externalIP={ip},port={port}".format(port=port, ip=ip, provisioner=provisioner))
+
+def provision_another(port=5432, provisioner="pure-provisioner"):
+    new_port = port
     print sys.argv
     for (pg, port) in list_pg():
         new_port = max(new_port, port + 1)
-    provision_one(new_port)
+    provision_one(new_port, provisioner)
 
 def delete_all():
     for (pg, port) in list_pg():
@@ -38,8 +47,11 @@ def main():
     args = sys.argv[1:]
     if args == ["--delete-all"]:
         delete_all()
-    elif len(args) == 2 and args[0] == "--port":
-        provision_one(int(args[1]))
+    elif len(args) == 2:
+        if args[0] == "--port":
+            provision_another(port=int(args[1]))
+        elif args[0] == "--provisioner":
+            provision_another(provisioner=args[1])
     else:
         provision_another()
 
