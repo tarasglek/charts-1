@@ -30,7 +30,7 @@ def list_pg():
 
 def get_external_ip():
     yaml = run("kubectl get nodes --output=yaml")
-    ip = yaml.split("flannel.alpha.coreos.com/public-ip: ")[1].split("\n")[0]
+    ip = yaml.split("- address: ")[1].split("\n")[0]
     return ip
 
 def provision_one(port, provisioner):
