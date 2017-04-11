@@ -28,8 +28,13 @@ def list_pg():
             continue
         yield (name, int(m.group(1)))
 
+def get_external_ip():
+    yaml = run("kubectl get nodes --output=yaml")
+    ip = yaml.split("flannel.alpha.coreos.com/public-ip: ")[1].split("\n")[0]
+    return ip
+
 def provision_one(port, provisioner):
-    ip = "192.168.50.4"
+    ip = get_external_ip()
     run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,externalIP={ip},port={port}".format(port=port, ip=ip, provisioner=provisioner))
 
 def provision_another(port=5432, provisioner="pure-provisioner"):
