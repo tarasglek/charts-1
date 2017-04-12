@@ -30,13 +30,14 @@ def main():
         run("ifconfig {interface} {ip} netmask 255.255.255.0 up".format(ip=ip, interface=interface))
     if os.path.exists("/etc/kubernetes/admin.conf"):
         sys.exit(0)
+    #systemd does not set $HOME, this makes kubectl confused
+    os.environ["HOME"] = "/root"
     run("kubeadm init --pod-network-cidr 10.244.0.0/16")
-    # enable kubectl to run locally
-    print run("mkdir -p ~/.kube && cp /etc/kubernetes/admin.conf ~/.kube/config")
+    # enable kubectl to run locally. 
+    print run("mkdir -p /root/.kube && cp /etc/kubernetes/admin.conf /root/.kube/config")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
-    # build provisioner docker image
-    run("docker build -t pure-provisioner:local .")
+    run("cd %s/k8s-provisioner && docker build -t pure-provisioner:local ." % MY_DIR)
     # install pure provisioner
     run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)
 
