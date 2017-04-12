@@ -35,6 +35,8 @@ def main():
     print run("mkdir -p ~/.kube && cp /etc/kubernetes/admin.conf ~/.kube/config")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
+    # build provisioner docker image
+    run("docker build -t pure-provisioner:local .")
     # install pure provisioner
     run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)
 
