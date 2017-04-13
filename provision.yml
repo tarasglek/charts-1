@@ -54,9 +54,15 @@
         Environment="KUBELET_EXTRA_ARGS=--enable-controller-attach-detach=false"
       dest: /etc/systemd/system/kubelet.service.d/15-node-override.conf
 
-  - name: fstab entry
-    shell: echo LABEL=k8s-meta /mnt ext4   ro,relatime,discard,data=ordered,noauto 0 0 >> /etc/fstab
+  - name: mkdir fstab entries
+    shell: mkdir -p /state /setup
 
+  - name: important fstab entries
+    blockinfile:
+      dest: /etc/fstab
+      block: |
+        LABEL=k8s-setup /setup ext4   ro,relatime,discard,noauto 0 0
+        LABEL=k8s-state /state ext4   rw,relatime,discard,noauto 0 0
 
   - name: Init script
     copy:
@@ -65,15 +71,14 @@
         Wants=network-online.target
         After=network-online.target kubelet.target docker.target
         [Service]
-        ExecStart=/bin/sh -c "/bin/mount /mnt;/mnt/purestorage-k8s-services.py"
+        ExecStart=/bin/sh -c "mount /setup;mount /state;/setup/purestorage-k8s-services.py"
         Type=oneshot
         [Install]
         WantedBy=multi-user.target
-      dest: /etc/systemd/system/purestorage-k8s-service.service
-
+      dest: /etc/systemd/system/setup-k8s.service
 
   - name: reload systemd
-    shell: systemctl daemon-reload; systemctl enable purestorage-k8s-service
+    shell: systemctl daemon-reload; systemctl enable setup-k8s
 
   - name: Copy the Docker gpg file
     apt_key:

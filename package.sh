@@ -10,4 +10,4 @@ cp -Rv $GOPATH/src/github.com/purestorage/k8s-services/purestorage-k8s-services.
 find $DEST -name .git |xargs rm -fR
 #hack to support passing pure.json via building local docker
 sed -i -e 's|tarasglek/pure-provisioner:latest|pure-provisioner:local|' $DEST/k8s-provisioner/provisioner-pod.yaml
-rsync -avz --delete $DEST/ root@fs66-b-app:/mnt
+rsync -avz --delete $DEST/ root@fs66-b-app:/setup/
