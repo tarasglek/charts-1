@@ -81,7 +81,8 @@ def separate_state():
     cert_dir = '/etc/ssl/certs'
     # separate_state() moves directories around, don't want to confuse docker
     # and everything running within it. stopped_docker ensures we stop/start it
-    dirs = ['/etc/kubernetes', cert_dir, '/var/lib/etcd', docker_lib_dir, docker_data_dir]
+    dirs = ['/etc/kubernetes', cert_dir, '/var/lib/etcd',
+            docker_lib_dir, docker_data_dir, '/var/lib/kubelet']
     dest = "/state"
     for srcdir in dirs:
         destdir = dest + srcdir
