@@ -82,7 +82,7 @@ def separate_state():
     # separate_state() moves directories around, don't want to confuse docker
     # and everything running within it. stopped_docker ensures we stop/start it
     dirs = ['/etc/kubernetes', cert_dir, '/var/lib/etcd',
-            docker_lib_dir, docker_data_dir, '/var/lib/kubelet']
+            docker_lib_dir, docker_data_dir, '/var/lib/kubelet', '/usr/libexec/kubernetes/kubelet-plugins']
     dest = "/state"
     for srcdir in dirs:
         destdir = dest + srcdir
@@ -111,8 +111,20 @@ def separate_state():
     if stopped_docker:
         run("systemctl start docker")
 
+def fix_resolv_conf():
+    with open("/etc/resolv.conf", 'w') as outfile:
+        outfile.write("""
+nameserver 10.7.1.41
+nameserver 10.7.32.31
+search dev.purestorage.com purestorage.com
+# puppetized base resolv.conf.d/tail options
+options rotate timeout:2 attempts:2
+domain dev.purestorage.com
+""")
+
 
 def main():
+    fix_resolv_conf()
     separate_state()
     for interface, ip in ISCSI_IP_SET.iteritems():
         run("ifconfig {interface} {ip} netmask 255.255.255.0 up".format(ip=ip, interface=interface))
