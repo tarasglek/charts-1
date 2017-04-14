@@ -2,6 +2,9 @@
 import subprocess
 import sys
 import re
+import os.path
+
+MY_DIR = os.path.dirname(sys.argv[0])
 
 def run(cmd):
     print cmd
@@ -35,7 +38,8 @@ def get_external_ip():
 
 def provision_one(port, provisioner):
     ip = get_external_ip()
-    run("helm install --name p{port} postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,externalIP={ip},port={port}".format(port=port, ip=ip, provisioner=provisioner))
+    run("helm install --name p{port} {my_dir}/postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,externalIP={ip},port={port}".format(
+        port=port, ip=ip, provisioner=provisioner, my_dir=MY_DIR))
 
 def provision_another(port=5432, provisioner="pure-provisioner"):
     new_port = port

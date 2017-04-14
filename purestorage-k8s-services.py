@@ -11,13 +11,11 @@ import sys
 import os
 import os.path
 import subprocess
-
+import json
 
 MY_DIR = os.path.abspath(os.path.dirname(sys.argv[0]))
-ISCSI_IP_SET = {
-    "data4": "10.15.66.9",
-    "data5": "10.15.66.10"
-}
+CONFIG_FILE = MY_DIR + "/config.json"
+CONFIG = json.loads(open(CONFIG_FILE).read())
 
 def run(cmd):
     print cmd
@@ -111,9 +109,13 @@ def separate_state():
     if stopped_docker:
         run("systemctl start docker")
 
+def write_file(filename, body):
+    with open(filename, 'w') as outfile:
+        outfile.write(body)
+    print "Wrote %d bytes to %s" % (len(body), filename)
+
 def fix_resolv_conf():
-    with open("/etc/resolv.conf", 'w') as outfile:
-        outfile.write("""
+    write_file("/etc/resolv.conf", """
 nameserver 10.7.1.41
 nameserver 10.7.32.31
 search dev.purestorage.com purestorage.com
@@ -122,11 +124,12 @@ options rotate timeout:2 attempts:2
 domain dev.purestorage.com
 """)
 
-
 def main():
     fix_resolv_conf()
     separate_state()
-    for interface, ip in ISCSI_IP_SET.iteritems():
+    for interface, ip in CONFIG.iteritems():
+        if not interface[0:4] == "data":
+            continue
         run("ifconfig {interface} {ip} netmask 255.255.255.0 up".format(ip=ip, interface=interface))
     if os.path.exists("/etc/kubernetes/admin.conf"):
         sys.exit(0)
@@ -135,6 +138,7 @@ def main():
     run("kubeadm init --pod-network-cidr 10.244.0.0/16")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
+    run("cp {config} {dest}".format(config=CONFIG_FILE, dest=MY_DIR + "/k8s-provisioner/pure.json"))
     run("cd %s/k8s-provisioner && docker build -t pure-provisioner:local ." % MY_DIR)
     # install pure provisioner
     run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)
