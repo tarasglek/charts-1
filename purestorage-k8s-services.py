@@ -138,7 +138,8 @@ def main():
     run("kubeadm init --pod-network-cidr 10.244.0.0/16")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
-    run("cp {config} {dest}".format(config=CONFIG_FILE, dest=MY_DIR + "/k8s-provisioner/pure.json"))
+    run("cp {config} {dest}".format(config=CONFIG_FILE,
+                                    dest=MY_DIR + "/k8s-provisioner/flexvolume/pure.json"))
     run("cd %s/k8s-provisioner && docker build -t pure-provisioner:local ." % MY_DIR)
     # install pure provisioner
     run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)

@@ -15,13 +15,15 @@ def run(cmd):
         sys.stderr.write(err.output)
         raise err
 
-def list_pg():
-    try:
-        helm_output = run("helm list").split("\n")
-    except subprocess.CalledProcessError:
-        run("helm init #maybe try again once tiller has been activated")
-        sys.exit(0)
+def helm_list():
+    while True:
+        try:
+            return run("helm list").split("\n")
+        except subprocess.CalledProcessError:
+            run("helm init; sleep 1 # Waiting for helm to initialize")
 
+def list_pg():
+    helm_output = helm_list()
     for line in helm_output[1:]:
         cols = line.split("\t")
         name = cols[0]
