@@ -67,6 +67,11 @@ server.get('/fetch/:queue/:subject', function (req, res, next) {
     .catch(err => next(err.stack))
 });
 
+server.get('/healthz', function (req, res, next) {
+  res.send("ok")
+  next()
+});
+
 server.get('/complete/:queue/:subject', function (req, res, next) {
   queue2boss(req.params.queue)
     .then(boss => boss.complete(req.params.subject))
@@ -81,10 +86,12 @@ server.listen(8080, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
 
-server.on('after', restify.auditLogger({
-  log: bunyan.createLogger({
-    name: 'audit',
-    stream: process.stdout
-  }),
-  body: true
-}));
+if (process.env.DEBUG == "true") {
+  server.on('after', restify.auditLogger({
+    log: bunyan.createLogger({
+      name: 'audit',
+      stream: process.stdout
+    }),
+    body: true
+  }));
+}

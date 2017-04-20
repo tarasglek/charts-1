@@ -1,0 +1,4 @@
+# configuration
+connection_string: "postgres://postgres:taras@fs66-b-app/postgres"
+port: 8080
+debug: false

@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{template "fullname" .}}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{template "fullname" .}}
+    spec:
+      containers:
+      - image: tarasglek/queue
+        name: queue-master
+        env:
+        - name: QUEUE_CONFIG
+          value: {{ .Values.connection_string | quote }}
+        - name: DEBUG
+          value: {{ .Values.debug | quote }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.port }}
+        ports:
+          - containerPort: {{ .Values.port }}
