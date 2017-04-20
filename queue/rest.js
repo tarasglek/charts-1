@@ -4,12 +4,9 @@
  TODO: report queue stats
 */
 const PgBoss = require('pg-boss');
-var express = require('express')
-
-// const boss = setup.setupBoss().connect().then(() => console.log("Ready")).catch(setup.onError);
-
 var restify = require('restify');
 var plugins = require('restify-plugins');
+var bunyan = require('bunyan');
 
 function encode(str) {
   var b = new Buffer(str);
@@ -19,6 +16,16 @@ function encode(str) {
 function decode(base64) {
   var b = new Buffer(base64, 'base64')
   return b.toString();
+}
+
+var masterBoss = Promise.resolve(null)
+
+if (process.env.QUEUE_CONFIG) {
+  const master = require("./master.js");
+  masterBoss = master.setupBoss(process.env.QUEUE_CONFIG).start().then(boss => {
+    console.log("Master Ready")
+    return boss
+  })
 }
 
 const server = restify.createServer({
@@ -32,7 +39,10 @@ server.use(plugins.bodyParser());
 
 
 function queue2boss(base64) {
-  return new PgBoss(decode(base64)).connect();
+  var connectionString = decode(base64)
+  if (connectionString == process.env.QUEUE_CONFIG)
+    masterBoss
+  return new PgBoss(connectionString).connect();
 }
 
 server.post('/publish/:queue/:subject/:options', function (req, res, next) {
@@ -70,3 +80,11 @@ server.get('/complete/:queue/:subject', function (req, res, next) {
 server.listen(8080, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+server.on('after', restify.auditLogger({
+  log: bunyan.createLogger({
+    name: 'audit',
+    stream: process.stdout
+  }),
+  body: true
+}));

@@ -6,6 +6,6 @@ USER  node
 WORKDIR /home/node
 COPY package.json /home/node
 RUN yarn install
-COPY . /home/node
+COPY master.js rest.js /home/node/
 EXPOSE 8080
-CMD [ "yarn", "master" ]
+CMD [ "yarn", "start" ]

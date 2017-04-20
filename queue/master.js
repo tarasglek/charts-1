@@ -27,4 +27,7 @@ function setupBoss() {
   return boss
 }
 
-setupBoss().start().then(() => console.log("Ready")).catch(onError)
+module.exports = {
+  setupBoss: setupBoss,
+  onError: onError
+}
