@@ -28,7 +28,10 @@
       deb: /tmp/{{docker_engine}}
 
   - name: Install prereqs
-    shell: apt-get install -y apt-transport-https ca-certificates curl linux-image-extra-$(uname -r) xfsprogs multipath-tools util-linux socat python open-iscsi
+    shell: apt-get install -y apt-transport-https ca-certificates curl linux-image-extra-$(uname -r) xfsprogs multipath-tools util-linux socat python open-iscsi python-setuptools
+
+  - name: install pure python rest lib
+    shell: easy_install purestorage
 
   - name: enable iscsi
     shell: systemctl enable iscsid
@@ -56,7 +59,8 @@
 
   - name: mkdir fstab entries
     shell: mkdir -p /state /setup
-
+  - name: install helm
+    shell: cd /tmp/ && curl https://storage.googleapis.com/kubernetes-helm/helm-v2.3.1-linux-amd64.tar.gz | tar -zxv && mv linux-amd64/helm /usr/local/bin
   - name: important fstab entries
     blockinfile:
       dest: /etc/fstab

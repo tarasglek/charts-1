@@ -144,4 +144,23 @@ def main():
     # install pure provisioner
     run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)
 
+def pure_json():
+    import purestorage
+    array = purestorage.FlashArray("169.254.0.1", "pureuser", "pureuser")
+    array_info = array.get()
+    try:
+        token = array.create_api_token("pureuser")
+    except Exception as e:
+        print e
+    api_token = array.get_api_token("pureuser")
+    array_ip = None
+    for interface in array.list_network_interfaces():
+        if interface['name'] == "linux.mgmt0":
+            array_ip = interface['address']
+    output = {"FlashArrays": [{
+        "MgmtEndPoint": array_ip,
+        "APIToken": api_token
+    }]}
+
 main()
+# pure_json()
