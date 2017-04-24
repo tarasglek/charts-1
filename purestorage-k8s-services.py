@@ -149,6 +149,15 @@ def main():
     run("kubeadm init --pod-network-cidr 10.244.0.0/16")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
+    """
+    if [ -f "$1" ]; then
+    SECRET_CONFIG=$1
+else
+    SECRET_CONFIG=config.json
+fi
+# configuration secret
+kubectl create secret generic pure-config --from-file $SECRET_CONFIG
+"""
     tmp_cfg = "/tmp/config.json"
     write_file(tmp_cfg, pure_json())
     # install pure provisioner

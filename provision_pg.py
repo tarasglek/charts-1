@@ -26,7 +26,7 @@ def list_pg():
     helm_output = helm_list()
     for line in helm_output[1:]:
         cols = line.split("\t")
-        name = cols[0]
+        name = cols[0].rstrip()
         m = re.search(r'^p(\d+)$', name)
         if not m:
             # print "(%s) is not a db volume, skipping" % (name)
