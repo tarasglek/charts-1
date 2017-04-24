@@ -7,11 +7,10 @@ cp -R \
     $GOPATH/src/github.com/tarasglek/k8s-vagrant \
     $GOPATH/src/github.com/purestorage/k8s-services \
     $GOPATH/src/github.com/PureStorage-OpenConnect/docker/cmd/k8s-provisioner \
+    $GOPATH/src/github.com/PureStorage-OpenConnect/docker/cmd/pure-flex \
     $DEST
 find $DEST -name .git |xargs rm -fR
 (cd $DEST && ln -sv k8s-services/purestorage-k8s-services.py  k8s-services/config.json .)
-#hack to support passing pure.json via building local docker
-sed -i -e 's|tarasglek/pure-provisioner:latest|pure-provisioner:local|' $DEST/k8s-provisioner/provisioner-pod.yaml
 SSH_HOST=root@fs66-b-app
 # rsync -avz --delete $DEST/ $SSH_HOST:/setup/
 ssh $SSH_HOST rm /setup/* -fR

@@ -114,18 +114,27 @@ def write_file(filename, body):
         outfile.write(body)
     print "Wrote %d bytes to %s" % (len(body), filename)
 
-def fix_resolv_conf():
-    write_file("/etc/resolv.conf", """
-nameserver 10.7.1.41
-nameserver 10.7.32.31
-search dev.purestorage.com purestorage.com
-# puppetized base resolv.conf.d/tail options
-options rotate timeout:2 attempts:2
-domain dev.purestorage.com
-""")
+def pure_json():
+    import purestorage
+    array = purestorage.FlashArray("169.254.0.1", "pureuser", "pureuser")
+    array_info = array.get()
+    try:
+        token = array.create_api_token("pureuser")
+    except Exception as e:
+        print e
+    api_token = array.get_api_token("pureuser")
+    api_token = api_token['api_token']
+    array_ip = None
+    for interface in array.list_network_interfaces():
+        if interface['name'] == "ct0.eth0":
+            array_ip = interface['address']
+    output = {"FlashArrays": [{
+        "MgmtEndPoint": array_ip,
+        "APIToken": api_token
+    }]}
+    return json.dumps(output)
 
 def main():
-    fix_resolv_conf()
     separate_state()
     for interface, ip in CONFIG.iteritems():
         if not interface[0:4] == "data":
@@ -138,29 +147,9 @@ def main():
     run("kubeadm init --pod-network-cidr 10.244.0.0/16")
     # flannel + rbac permissions
     run("cd %s/k8s-vagrant && ./k8s_config.sh" % MY_DIR)
-    run("cp {config} {dest}".format(config=CONFIG_FILE,
-                                    dest=MY_DIR + "/k8s-provisioner/flexvolume/pure.json"))
-    run("cd %s/k8s-provisioner && docker build -t pure-provisioner:local ." % MY_DIR)
+    tmp_cfg = "/tmp/config.json"
+    write_file(tmp_cfg, pure_json())
     # install pure provisioner
-    run("cd %s/k8s-provisioner && ./install_local.sh" % MY_DIR)
-
-def pure_json():
-    import purestorage
-    array = purestorage.FlashArray("169.254.0.1", "pureuser", "pureuser")
-    array_info = array.get()
-    try:
-        token = array.create_api_token("pureuser")
-    except Exception as e:
-        print e
-    api_token = array.get_api_token("pureuser")
-    array_ip = None
-    for interface in array.list_network_interfaces():
-        if interface['name'] == "linux.mgmt0":
-            array_ip = interface['address']
-    output = {"FlashArrays": [{
-        "MgmtEndPoint": array_ip,
-        "APIToken": api_token
-    }]}
+    run("cd %s/k8s-provisioner && ./install_common.sh %s" % (MY_DIR, tmp_cfg))
 
 main()
-# pure_json()
