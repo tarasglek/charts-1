@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{template "fullname" .}}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{template "fullname" .}}
+    spec:
+      containers:
+      - image: sosedoff/pgweb
+        name: pgweb
+        ports:
+        - containerPort: {{ .Values.port }}
