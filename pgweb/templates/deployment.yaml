@@ -11,6 +11,6 @@ spec:
     spec:
       containers:
       - image: sosedoff/pgweb
-        name: pgweb
+        name: {{template "fullname" .}}
         ports:
         - containerPort: {{ .Values.port }}
