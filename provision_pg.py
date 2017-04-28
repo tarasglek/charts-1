@@ -40,7 +40,7 @@ def get_external_ip():
 
 def provision_one(port, provisioner):
     ip = get_external_ip()
-    run("helm install --name p{port} {my_dir}/postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,externalIP={ip},port={port}".format(
+    run("helm install --name p{port} {my_dir}/postgresql-0.6.0.tgz --set persistence.storageClass={provisioner},postgresPassword=taras,service.externalIPs={{{ip}}},service.port={port}".format(
         port=port, ip=ip, provisioner=provisioner, my_dir=MY_DIR))
 
 def provision_another(port=5432, provisioner="pure-provisioner"):
