@@ -14,3 +14,6 @@ spec:
         name: {{template "fullname" .}}
         ports:
         - containerPort: {{ .Values.port }}
+        env:
+        - name: DATABASE_URL
+          value: {{ .Values.connection_string | quote }}

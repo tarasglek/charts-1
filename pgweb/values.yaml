@@ -1,2 +1,3 @@
 # configuration
 port: 8081
+connection_string: "postgres://postgres:taras@p5432-postgresql/postgres?sslmode=disable"
